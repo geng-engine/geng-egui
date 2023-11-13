@@ -1,7 +1,8 @@
+mod icon;
 mod painter;
 
-pub use self::painter::CallbackFn;
 use self::painter::Painter;
+pub use self::{icon::Icon, painter::CallbackFn};
 
 use geng::prelude::*;
 
