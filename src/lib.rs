@@ -5,6 +5,8 @@ use self::painter::Painter;
 
 use geng::prelude::*;
 
+pub use egui;
+
 /// Bindings for [egui](https://github.com/emilk/egui).
 pub struct EguiGeng {
     geng: Geng,
