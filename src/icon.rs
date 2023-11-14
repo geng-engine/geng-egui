@@ -5,8 +5,7 @@ use egui::{ColorImage, Context, ImageData, TextureId, TextureOptions};
 
 pub struct Icon {
     pub texture: TextureId,
-    pub width: usize,
-    pub height: usize,
+    pub size: vec2<usize>,
 }
 
 impl Icon {
@@ -33,11 +32,7 @@ impl Icon {
             options,
         );
 
-        Ok(Self {
-            texture: id,
-            width: size.x,
-            height: size.y,
-        })
+        Ok(Self { texture: id, size })
     }
 
     pub fn from_ugli(ugli: &Ugli, texture: &ugli::Texture, alloc: &Context) -> Result<Self> {
@@ -47,6 +42,7 @@ impl Icon {
             ugli::FramebufferRead::new_color(ugli, ugli::ColorAttachmentRead::Texture(texture));
         let data = read.read_color();
         let data: Vec<u8> = (0..read.size().y)
+            .rev()
             .flat_map(|y| {
                 let data = &data;
                 (0..read.size().x).flat_map(move |x| {
@@ -66,13 +62,6 @@ impl Icon {
                 premultiply_alpha: false,
             },
         )
-    }
-
-    pub fn size(&self) -> egui::Vec2 {
-        egui::Vec2 {
-            x: self.width as f32,
-            y: self.height as f32,
-        }
     }
 
     pub fn id(&self) -> TextureId {

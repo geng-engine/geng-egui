@@ -158,13 +158,13 @@ impl Painter {
     }
 
     pub fn set_texture(&mut self, tex_id: egui::TextureId, delta: &egui::epaint::ImageDelta) {
-        let [w, h] = delta.image.size();
+        let [_w, _h] = delta.image.size();
         let filter = match delta.options.magnification {
             egui::TextureFilter::Nearest => ugli::Filter::Nearest,
             egui::TextureFilter::Linear => ugli::Filter::Linear,
         };
 
-        if let Some([x, y]) = delta.pos {
+        if let Some([_x, _y]) = delta.pos {
             // Partial update
             if let Some(texture) = self.textures.get_mut(&tex_id) {
                 texture.set_filter(filter);
@@ -208,7 +208,8 @@ impl Painter {
                         image.pixels.len(),
                         "Mismatch between texture size and texel count"
                     );
-                    let texture = ugli::Texture::new_with(
+
+                    let mut texture = ugli::Texture::new_with(
                         self.geng.ugli(),
                         vec2(image.width(), image.height()),
                         |pixel| {
@@ -217,6 +218,7 @@ impl Painter {
                             Rgba::new(color.r(), color.g(), color.b(), color.a()).convert()
                         },
                     );
+                    texture.set_filter(filter);
                     self.textures.insert(tex_id, texture);
                 }
                 egui::ImageData::Font(image) => {
