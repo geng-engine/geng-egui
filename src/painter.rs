@@ -158,13 +158,17 @@ impl Painter {
     }
 
     pub fn set_texture(&mut self, tex_id: egui::TextureId, delta: &egui::epaint::ImageDelta) {
-        let [_w, _h] = delta.image.size();
+        let [w, h] = delta.image.size();
+        let sub_size = vec2(w, h);
+
         let filter = match delta.options.magnification {
             egui::TextureFilter::Nearest => ugli::Filter::Nearest,
             egui::TextureFilter::Linear => ugli::Filter::Linear,
         };
 
-        if let Some([_x, _y]) = delta.pos {
+        if let Some([x, y]) = delta.pos {
+            let sub_pos = vec2(x, y);
+
             // Partial update
             if let Some(texture) = self.textures.get_mut(&tex_id) {
                 texture.set_filter(filter);
@@ -176,9 +180,9 @@ impl Painter {
                             image.pixels.len(),
                             "Mismatch between texture size and texel count"
                         );
-                        todo!();
-                        // let data: &[u8] = bytemuck::cast_slice(image.pixels.as_ref());
-                        // texture.update_texture_part(ctx, x as _, y as _, w as _, h as _, data);
+
+                        let data: &[u8] = bytemuck::cast_slice(image.pixels.as_ref());
+                        texture.sub_image(sub_pos, sub_size, data);
                     }
                     egui::ImageData::Font(image) => {
                         assert_eq!(
@@ -187,13 +191,11 @@ impl Painter {
                             "Mismatch between texture size and texel count"
                         );
 
-                        todo!();
-                        // let data: Vec<u8> = image
-                        //     .srgba_pixels(None)
-                        //     .flat_map(|a| a.to_array())
-                        //     .collect();
-
-                        // texture.update_texture_part(ctx, x as _, y as _, w as _, h as _, &data);
+                        let data: Vec<u8> = image
+                            .srgba_pixels(None)
+                            .flat_map(|a| a.to_array())
+                            .collect();
+                        texture.sub_image(sub_pos, sub_size, &data);
                     }
                 }
             } else {
@@ -209,15 +211,20 @@ impl Painter {
                         "Mismatch between texture size and texel count"
                     );
 
-                    let mut texture = ugli::Texture::new_with(
-                        self.geng.ugli(),
-                        vec2(image.width(), image.height()),
-                        |pixel| {
-                            let color = image.pixels
-                                [pixel.x + (image.height() - 1 - pixel.y) * image.width()]; // Geng textures have origin in the bottom-left
-                            Rgba::new(color.r(), color.g(), color.b(), color.a()).convert()
-                        },
-                    );
+                    // NOTE: could `bytemuck::cast` but we need owned data anyway
+                    let pixels = image
+                        .pixels
+                        .iter()
+                        .flat_map(|color| color.to_array())
+                        .collect();
+                    let image = image::RgbaImage::from_vec(
+                        image.width().try_into().unwrap(),
+                        image.height().try_into().unwrap(),
+                        pixels,
+                    )
+                    .expect("failed to convert to an image");
+                    let mut texture = ugli::Texture::from_image_image(self.geng.ugli(), image);
+                    // let mut texture = ugli::Texture::new_with(
                     texture.set_filter(filter);
                     self.textures.insert(tex_id, texture);
                 }
@@ -228,15 +235,17 @@ impl Painter {
                         "Mismatch between texture size and texel count"
                     );
 
-                    let mut texture = ugli::Texture::new_with(
-                        self.geng.ugli(),
-                        vec2(image.width(), image.height()),
-                        |pixel| {
-                            let alpha = image.pixels
-                                [pixel.x + (image.height() - 1 - pixel.y) * image.width()]; // Geng textures have origin in the bottom-left
-                            Rgba::new(1.0, 1.0, 1.0, alpha)
-                        },
-                    );
+                    let pixels = image
+                        .srgba_pixels(None)
+                        .flat_map(|color| color.to_array())
+                        .collect();
+                    let image = image::RgbaImage::from_vec(
+                        image.width().try_into().unwrap(),
+                        image.height().try_into().unwrap(),
+                        pixels,
+                    )
+                    .expect("failed to convert to an image");
+                    let mut texture = ugli::Texture::from_image_image(self.geng.ugli(), image);
                     texture.set_filter(filter);
                     self.textures.insert(tex_id, texture);
                 }

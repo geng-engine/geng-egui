@@ -6,5 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-egui = "0.23.0"
+bytemuck = "1.14.0"
+egui = { version = "0.23.0", features = ["bytemuck"] }
 geng = "0.15.0"
+image = "0.24.7"
+winit = "=0.29.0-beta.0" # Lock winit until geng-window is updated to the new version
