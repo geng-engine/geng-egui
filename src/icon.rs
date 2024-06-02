@@ -24,6 +24,10 @@ impl Icon {
         let options = TextureOptions {
             magnification: filter,
             minification: filter,
+            wrap_mode: match options.wrap_mode {
+                ugli::WrapMode::Repeat => egui::TextureWrapMode::Repeat,
+                ugli::WrapMode::Clamp => egui::TextureWrapMode::ClampToEdge,
+            },
         };
 
         let id = alloc.tex_manager().write().alloc(

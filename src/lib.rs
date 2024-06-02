@@ -74,7 +74,7 @@ impl EguiGeng {
 
         // Render mesh
         if let Some(shapes) = self.shapes.take() {
-            let paint_jobs = self.egui_ctx.tessellate(shapes);
+            let paint_jobs = self.egui_ctx.tessellate(shapes, 1.0);
             self.painter.paint_and_update_textures(
                 framebuffer,
                 paint_jobs,
@@ -106,6 +106,7 @@ impl EguiGeng {
                     let modifiers = self.get_modifiers();
                     self.egui_input.events.push(egui::Event::Key {
                         key,
+                        physical_key: None,
                         modifiers,
                         pressed: true,
                         repeat: false,
@@ -124,6 +125,7 @@ impl EguiGeng {
                 if let Some(key) = egui_key(key) {
                     self.egui_input.events.push(egui::Event::Key {
                         key,
+                        physical_key: None,
                         modifiers: self.get_modifiers(),
                         pressed: false,
                         repeat: false,

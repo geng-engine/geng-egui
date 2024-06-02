@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 bytemuck = "1"
-egui = { version = "0.23.0", features = ["bytemuck"] }
+egui = { version = "0.27.0", features = ["bytemuck"] }
 geng = { git = "https://github.com/geng-engine/geng" }
 image = "0.25"
