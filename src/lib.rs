@@ -91,15 +91,18 @@ impl EguiGeng {
     pub fn handle_event(&mut self, event: geng::Event) {
         match event {
             geng::Event::Wheel { delta } => {
-                if self.geng.window().is_key_pressed(geng::Key::ShiftLeft) {
-                    self.egui_input
-                        .events
-                        .push(egui::Event::Scroll(egui::Vec2::new(delta as f32, 0.0)));
-                } else {
-                    self.egui_input
-                        .events
-                        .push(egui::Event::Scroll(egui::Vec2::new(0.0, delta as f32)));
-                }
+                let window = self.geng.window();
+                self.egui_input.events.push(egui::Event::MouseWheel {
+                    unit: egui::MouseWheelUnit::Point,
+                    delta: egui::Vec2::new(0.0, delta as f32),
+                    modifiers: egui::Modifiers {
+                        alt: window.is_key_pressed(geng::Key::AltLeft),
+                        ctrl: window.is_key_pressed(geng::Key::ControlLeft),
+                        shift: window.is_key_pressed(geng::Key::ShiftLeft),
+                        mac_cmd: false,
+                        command: false,
+                    },
+                });
             }
             geng::Event::KeyPress { key } => {
                 if let Some(key) = egui_key(key) {
